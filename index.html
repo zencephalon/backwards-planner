@@ -1,0 +1,99 @@
+
+
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Backwards Planner</title>
+    <!-- <link rel="stylesheet" type="text/css" href="styles.css"> -->
+    <style>
+      #cy {
+        width: 800px;
+        height: 800px;
+        display: block;
+      }
+
+      .focused {
+        background-color: 'red',
+      }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.8.2/cytoscape.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mousetrap/1.6.3/mousetrap.min.js"></script>
+    <script>
+      $(document).ready(() => {
+        const cy = cytoscape({
+          container: document.getElementById('cy'), // container to render in
+          boxSelectionEnabled: false,
+          style: [
+            {
+              "selector": ".focused",
+              "style": {
+                "background-color": "red"
+              }
+            },
+            {
+              "selector": "node[label]",
+              "style": {
+                "label": "data(label)"
+              }
+            },
+            {
+              "selector": "edge[label]",
+              "style": {
+                "label": "data(label)",
+                "width": 3
+              }
+            }
+          ]
+        });
+        var selected = cy.add([
+          { group: 'nodes', data: { id: 'root', label: 'root' }, position: { x: 100, y: 100 } },
+        ]);
+
+        cy.on('select', (e) => {
+          if (!e.target.isNode()) return;
+          selected.removeClass('focused');
+          selected = e.target;
+          selected.addClass('focused');
+        });
+
+        $('#new').submit((e) => {
+          e.preventDefault();
+
+          const ele = cy.add({
+            group: 'nodes',
+            data: { label: $('#goal').val() + Math.random() },
+            position: { x: 50, y: 50 }
+          });
+          console.log(ele);
+          cy.add({
+            group: 'edges',
+            data: {
+              source: selected.id(),
+              target: ele.id()
+            }
+          })
+          cy.elements().layout({
+            name: 'breadthfirst',
+            roots: ['root']
+          }).run();
+        })
+
+        Mousetrap.bind('right', (e) => {
+          selected.neighborhood().edges().map((e) => { console.log(e.data('label'))})
+        })
+      })
+    </script>
+  </head>
+
+  <body>
+    <form id="new">
+      <input type="text" id="goal" />
+      <input type="submit" />
+    </form>
+    <div id="cy">
+
+    </div>
+  </body>
+</html>
