@@ -51,11 +51,16 @@
           { group: 'nodes', data: { id: 'root', label: 'root' }, position: { x: 100, y: 100 } },
         ]);
 
-        cy.on('select', (e) => {
-          if (!e.target.isNode()) return;
+        const selectNode = (node) => {
+          if (!node) return;
+          if (!node.isNode()) return;
           selected.removeClass('focused');
-          selected = e.target;
+          selected = node;
           selected.addClass('focused');
+        }
+
+        cy.on('select', (e) => {
+          selectNode(e.target);
         });
 
         $('#new').submit((e) => {
@@ -80,8 +85,24 @@
           }).run();
         })
 
+        const getFirstAbove = () => selected.incomers().nodes().eq(0);
+        const getFirstBelow = () => selected.outgoers().nodes().eq(0);
+        const getSiblings = () => getFirstAbove().outgoers().nodes().sort((e1, e2) => e1.position('x') < e2.position('x'));
+
         Mousetrap.bind('right', (e) => {
-          selected.neighborhood().edges().map((e) => { console.log(e.data('label'))})
+          const siblings = getSiblings();
+          const siblingIds = siblings.map(s => s.id());
+          const index = siblingIds.indexOf(selected.id());
+          const next = siblings[(index + 1) % siblingIds.length];
+          console.log({ next, index, siblingIds });
+          selectNode(next);
+        })
+
+        Mousetrap.bind('up', (e) => {
+          selectNode(getFirstAbove());
+        })
+        Mousetrap.bind('down', (e) => {
+          selectNode(getFirstBelow());
         })
       })
     </script>
