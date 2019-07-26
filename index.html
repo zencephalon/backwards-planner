@@ -87,15 +87,20 @@
 
         const getFirstAbove = () => selected.incomers().nodes().eq(0);
         const getFirstBelow = () => selected.outgoers().nodes().eq(0);
-        const getSiblings = () => getFirstAbove().outgoers().nodes().sort((e1, e2) => e1.position('x') < e2.position('x'));
+        const getSiblings = () => getFirstAbove().outgoers().nodes().sort((e1, e2) => e1.position('x') - e2.position('x'));
 
-        Mousetrap.bind('right', (e) => {
+        const getNextSibling = (i) => {
           const siblings = getSiblings();
           const siblingIds = siblings.map(s => s.id());
           const index = siblingIds.indexOf(selected.id());
-          const next = siblings[(index + 1) % siblingIds.length];
-          console.log({ next, index, siblingIds });
-          selectNode(next);
+          return siblings[(index + i + siblingIds.length) % siblingIds.length];
+        }
+
+        Mousetrap.bind('right', (e) => {
+          selectNode(getNextSibling(1));
+        })
+        Mousetrap.bind('left', (e) => {
+          selectNode(getNextSibling(-1));
         })
 
         Mousetrap.bind('up', (e) => {
