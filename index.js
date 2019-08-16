@@ -1,7 +1,14 @@
 $(document).ready(() => {
 
   let nodes = [
-    { id: 'root', label: 'root' },
+    { id: 'root', label: 'Ship Backwards Plan' },
+    { id: 'child1', label: 'Write the code for it' },
+  ];
+  let edges = [
+    {
+      source: 'root',
+      target: 'child1',
+    }
   ];
   let selected;
 
@@ -56,40 +63,41 @@ $(document).ready(() => {
         data: node
       })
     });
+    _.each(edges, (edge) => {
+      cy.add({
+        group: 'edges',
+        data: edge,
+      });
+    });
     runLayout();
     selectNode(selected);
   }
 
-  const addNode = (label) => {
-    const ele = cy.add({
-      group: 'nodes',
-      data: { label },
-      position: { x: 50, y: 50 }
-    });
-    cy.add({
+  const addEdge = (source, target) => {
+    const edge = {
+      source,
+      target,
+    };
+    const cyEdge = cy.add({
       group: 'edges',
-      data: {
-        source: selected.id(),
-        target: ele.id()
-      }
-    })
-    runLayout();
+      data: edge,
+    });
+    edges.push(edge);
   }
 
-  // var selected = cy.add([
-  //   { group: 'nodes', data: { id: 'root', label: 'root' }},
-  // ]);
-  initCy();
-
-  cy.on('select', (e) => {
-    selectNode(e.target);
-  });
-
-  $('#new').submit((e) => {
-    e.preventDefault();
-    addNode(goalInput.val());
-    goalInput.val('');
-  });
+  const addNode = (label) => {
+    const cyNode = cy.add({
+      group: 'nodes',
+      data: { label },
+    });
+    const id = cyNode.id();
+    nodes.push({
+      id,
+      label,
+    });
+    addEdge(selected.id(), id);
+    runLayout();
+  }
 
   const getFirstAbove = () => selected.incomers().nodes().eq(0);
   const getFirstBelow = () => selected.outgoers().nodes().eq(0);
@@ -101,6 +109,18 @@ $(document).ready(() => {
     const index = siblingIds.indexOf(selected.id());
     return siblings[(index + i + siblingIds.length) % siblingIds.length];
   }
+
+  initCy();
+
+  cy.on('select', (e) => {
+    selectNode(e.target);
+  });
+
+  $('#new').submit((e) => {
+    e.preventDefault();
+    addNode(goalInput.val());
+    goalInput.val('');
+  });
 
   Mousetrap.bind('right', (e) => {
     selectNode(getNextSibling(1));
