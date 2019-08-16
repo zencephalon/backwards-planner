@@ -1,10 +1,10 @@
 $(document).ready(() => {
 
-  let nodes = [
+  let nodes = JSON.parse(localStorage.getItem('nodes')) || [
     { id: 'root', label: 'Ship Backwards Plan' },
     { id: 'child1', label: 'Write the code for it' },
   ];
-  let edges = [
+  let edges = JSON.parse(localStorage.getItem('edges')) || [
     {
       source: 'root',
       target: 'child1',
@@ -78,11 +78,12 @@ $(document).ready(() => {
       source,
       target,
     };
-    const cyEdge = cy.add({
+    cy.add({
       group: 'edges',
       data: edge,
     });
     edges.push(edge);
+    localStorage.setItem('edges', JSON.stringify(edges));
   }
 
   const addNode = (label) => {
@@ -95,6 +96,7 @@ $(document).ready(() => {
       id,
       label,
     });
+    localStorage.setItem('nodes', JSON.stringify(nodes));
     addEdge(selected.id(), id);
     runLayout();
   }
