@@ -12,7 +12,8 @@ $(document).ready(() => {
   ];
   let selected;
 
-  const goalInput = $('#goal');
+  const $goalInput = $('#autoComplete');
+  const $modal = $('#new-modal');
 
   const cy = cytoscape({
     container: document.getElementById('cy'), // container to render in
@@ -111,6 +112,11 @@ $(document).ready(() => {
     const index = siblingIds.indexOf(selected.id());
     return siblings[(index + i + siblingIds.length) % siblingIds.length];
   }
+  
+  const openModal = () => {
+    $modal.show();
+    $goalInput.focus();
+  }
 
   initCy();
 
@@ -118,10 +124,34 @@ $(document).ready(() => {
     selectNode(e.target);
   });
 
+  $goalInput.blur(() => {
+    $modal.hide();
+  })
+
   $('#new').submit((e) => {
     e.preventDefault();
-    addNode(goalInput.val());
-    goalInput.val('');
+    addNode($goalInput.val());
+    $goalInput.val('');
+    $goalInput.blur();
+    $modal.hide();
+  });
+
+
+  new autoComplete({
+    data: {
+      // src: () => {
+      //   console.log('hello?', nodes);
+      //   return nodes;
+      // },
+      src: ['hello', 'goodbye', 'yolo'],
+      // key: ['label'],
+      cache: true,
+    },
+    searchEngine: 'loose',
+  })
+
+  Mousetrap.bind('ctrl+n', () => {
+    openModal();
   });
 
   Mousetrap.bind('right', (e) => {
